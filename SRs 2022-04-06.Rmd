@@ -1,0 +1,171 @@
+---
+title: "SRs 2022-04-06"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(janitor)
+
+SRs_raw <- read_csv("Data/srr-records.csv")
+SRs <- clean_names(SRs_raw)
+
+SRs <- SRs %>% 
+  rename(rating = based_on_the_above_assessments_of_the_methods_how_would_you_rate_the_reliability_of_the_review)
+
+
+sink("output.csv")
+
+SRs %>% 
+  filter((rating == "High" | rating == "Medium") & is.na(headline_findings)) %>% 
+  select(id) %>%
+  arrange(id) %>% 
+  print(n = 100)
+
+
+
+sink()
+
+
+SRs %>% 
+  filter((rating == "High" | rating == "Medium") & dep == "Yes" & (is.na(headline_findings) | headline_findings == "We are in the process of completing a summary for this review. Please check back later")) %>%
+  tabyl(rating)
+
+
+SRs %>% 
+  filter(rating %in% c("High", "Medium"),
+         dep == "Yes",
+         is.na(headline_findings) | headline_findings == "We are in the process of completing a summary for this review. Please check back later",
+         review_type != "Other") %>% 
+  write_csv("Data/after-r-filter.csv")
+
+SRs %>% 
+  filter(rating %in% c("High", "Medium") | is.na(rating),
+         dep == "Yes",
+         is.na(headline_findings) | headline_findings == "We are in the process of completing a summary for this review. Please check back later",
+         review_type != "Other" | is.na(review_type)) %>% 
+    count(rating)
+
+
+SRs %>% 
+  filter((rating == "High" | rating == "Medium") & dep == "Yes" & (is.na(headline_findings) | headline_findings == "We are in the process of completing a summary for this review. Please check back later") & review_type != "Other") %>%
+  tabyl(rating)
+  # select(id) %>%
+  # arrange(id) %>%
+  # print(n = 100)
+
+### Education sector ###
+
+##SRs##
+Ed_SRs <- SRs %>% 
+  filter(sector_name == "Education")
+
+Ed_SRs %>% 
+  # filter(is.na(research_funding_agency)) %>% 
+  filter(study_status == "Title") %>%
+  select(id, study_status, research_funding_agency) %>%
+  print(n=50)
+  # summarise(id, study_status, research_funding_agency)
+
+Ed_SRs %>% 
+  filter(id == "17346") %>% 
+  summarise(study_status, research_funding_agency, rating)
+
+
+Ed_SRs %>% 
+  filter(is.na(rating)) %>% 
+  filter(study_status == "Completed") %>% 
+  select(id,study_status,  rating) %>% 
+  print(n=25)
+
+##IEs##
+
+IEs_raw <- read_csv("Data/ier-records.csv")
+
+IEs <- clean_names(IEs_raw)
+
+Ed_IEs <- IEs %>% 
+  filter(sector_name == "Education") 
+
+Ed_IEs %>% 
+  count(n_distinct(id))
+
+Ed_IEs %>% 
+  filter(is.na(primary_theme)) %>% 
+  summarise(id)
+
+
+
+```
+
+
+
+
+
+
+
+
+
+SRs %>% 
+  rename(rating = based_on_the_above_assessments_of_the_methods_how_would_you_rate_the_reliability_of_the_review) %>% 
+  tabyl(rating, background)
+
+library(modelsummary)
+
+datasummary_skim(SRs)
+
+### RIS FILES ###
+
+tibble(
+  line = read_lines("Data/Automation 2020-10-22.ris")
+) %>%
+  mutate(line_number = row_number()) %>% 
+ 
+
+  
+###VARIOUS SNIPPETS###
+  
+
+# 
+# SRs %>% 
+#   rename(rating = based_on_the_above_assessments_of_the_methods_how_would_you_rate_the_reliability_of_the_review) %>% 
+#   filter(is.na(background)) %>% 
+#   count(rating)
+# 
+# SRs %>% 
+#   rename(rating = based_on_the_above_assessments_of_the_methods_how_would_you_rate_the_reliability_of_the_review) %>% 
+#   filter(!is.na(background)) %>% 
+#   count(rating)
+# 
+# SRs %>% 
+#   rename(rating = based_on_the_above_assessments_of_the_methods_how_would_you_rate_the_reliability_of_the_review) %>% 
+#   filter(is.na(background)) %>% 
+#   summarise(id)
+  
+# SRs <- read_csv("Data/srr-records.csv")
+# problems()
+# SRs <- clean_names(SRs)
+# 
+# SRs %>% 
+#   rating <-  based_on_the_above_assessments_of_the_methods_how_would_you_rate_the_reliability_of_the_review
+#   drop_na(rating) %>%
+#   group_by(rating) %>% 
+#   summarise(no_sum = is.na(headline_findings))
+# 
+# 
+#   filter(!is.na(headline_findings)) %>% 
+#   count(rating)
+# 
+#   
+# SRs %>% 
+#   rename(rating = based_on_the_above_assessments_of_the_methods_how_would_you_rate_the_reliability_of_the_review) %>% 
+#   drop_na(rating) %>% 
+#   count(rating)
+
+```

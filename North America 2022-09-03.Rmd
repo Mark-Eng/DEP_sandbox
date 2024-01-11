@@ -1,0 +1,33 @@
+---
+title: "IE continents 2022-09-03"
+output: html_document
+date: "2022-09-03"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r}
+library(tidyverse)
+library(janitor)
+
+IEs_raw <- read_csv("Data/ier-records.csv") 
+
+IEs  <- clean_names(IEs_raw) %>% 
+  mutate(id = as.character(id))
+
+IEs_north_america <- IEs %>% 
+  select(id, dep, continent, country, status) %>% 
+  filter(continent == "North America") %>%
+  # filter(is.na(dep)) %>% 
+  filter(status == "Published")
+  # summarise(id_count = n_distinct(id))
+  # filter(id == "4505") 
+
+
+
+```
+
